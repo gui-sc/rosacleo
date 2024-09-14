@@ -5,12 +5,13 @@ const UserMenu = ({ user, onLogout }:
     { user: User; onLogout: () => void }
 ) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const menuRef = useRef(null);
+    const menuRef = useRef<HTMLDivElement>(null);
 
     // Fecha o menu se clicar fora dele
     useEffect(() => {
-        const handleClickOutside = (event: any) => {
-            if (menuRef.current && !menuRef.current.contains(event.target)) {
+        
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
                 setIsMenuOpen(false);
             }
         };
