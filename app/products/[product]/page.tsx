@@ -32,14 +32,9 @@ const products: Product[] = [
 const ProductPage = ({ params }: { params: { product: string } }
 ) => {
     // Busca o produto com base no parâmetro da URL
-    console.log(params.product);
-    const product = products.filter((product) => {
-        console.log(product.name);
-        console.log(params.product);
-        return product.name === params.product
-    });
+    const product = products.find(product => product.name === params.product);
     // Caso o produto não seja encontrado
-    if (!product.length) {
+    if (!product) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <h1 className="text-2xl">Produto não encontrado</h1>
@@ -50,7 +45,7 @@ const ProductPage = ({ params }: { params: { product: string } }
     return (
         <div className="min-h-screen bg-gray-100">
             <Header />
-            <ProductDetails product={product[0]} />
+            <ProductDetails product={product} />
         </div>
     );
 };
