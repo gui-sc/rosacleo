@@ -3,7 +3,7 @@ import LocalMallIcon from '@mui/icons-material/LocalMall'; // Ícone do carrinho
 import HiX from '@mui/icons-material/Close'; // Ícone para fechar a sidebar
 import { useCart } from '../contexts/cartContext';
 import { useRouter } from 'next/navigation';
-import { formatNumber } from '../helpers/formatNumer';
+import { maskToCurrency } from '../helpers/mask';
 
 const ShoppingCartSidebar = () => {
     const router = useRouter();
@@ -89,7 +89,7 @@ const ShoppingCartSidebar = () => {
                                 {/* Botão de diminuir quantidade */}
                                 <div className='flex flex-row justify-between gap-3'>
                                     <span>R$</span>
-                                    <span>{formatNumber(cartItems[key].item.price)}</span>
+                                    <span>{maskToCurrency(cartItems[key].item.price)}</span>
                                 </div>
                             </div>
                         ))}
@@ -104,7 +104,7 @@ const ShoppingCartSidebar = () => {
                         <>
                             <div className="mt-4 flex justify-between items-center font-bold text-sm md:text-base">
                                 <span>Total:</span>
-                                <span>R$ {formatNumber(cartTotal)}</span>
+                                <span>R$ {maskToCurrency(cartTotal)}</span>
                             </div>
                             <button
                                 className="w-full px-3 py-1 mt-4 bg-[--primary] text-white text-sm md:text-base rounded-md hover:bg-white hover:text-[--primary] border-2 hover:border-[--primary] border-white transition-all duration-300 ease-in-out"

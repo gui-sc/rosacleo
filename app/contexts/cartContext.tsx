@@ -7,10 +7,12 @@ export const CartContext = createContext<{
     cartItems: Record<string, CartItem>;
     addCartItem: (item: Product) => void;
     removeCartItem: (item: Product) => void;
+    clearCart: () => void;
 }>({
     cartItems: {},
     addCartItem: () => { },
     removeCartItem: () => { },
+    clearCart: () => { },
 });
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
@@ -62,8 +64,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             };
         })
     }
-
-    return <CartContext.Provider value={{ cartItems, addCartItem, removeCartItem }}>{children}</CartContext.Provider>;
+    const clearCart = () => {
+        setCartItems({});
+    }
+    return <CartContext.Provider value={{ cartItems, addCartItem, removeCartItem, clearCart }}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {

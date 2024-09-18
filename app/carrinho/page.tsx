@@ -4,23 +4,31 @@ import Link from 'next/link'; // Para navegação
 import Header from '../components/header';
 import { useCart } from '../contexts/cartContext';
 import PaymentModal from '../components/paymentModal';
-import { formatNumber } from '../helpers/formatNumer';
 import { Address } from '../types/address';
 import { PaymentCard } from '../types/payment';
 import ShipConfirmModal from '../components/shipConfirmModal';
 import { showToast } from '../helpers/toast';
+import { maskToCep, maskToCpf, maskToCurrency, maskToPhone } from '../helpers/mask';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../contexts/authContext';
+import AlertModal from '../components/alertModal';
 
 export default function CartPage() {
-    const { cartItems } = useCart();
+    const router = useRouter();
+    const { user } = useAuth();
+    const { cartItems, clearCart } = useCart();
     const [activeTab, setActiveTab] = useState('details'); // Estado para alternar entre as abas
     const [isModalOpen, setIsModalOpen] = useState(false); // Estado para abrir/fechar o modal
     const [isModalShipConfirmOpen, setIsModalShipConfirmOpen] = useState(false); // Estado para abrir/fechar o modal de confirmação de frete
+    const [isModalAlertOpen, setIsModalAlertOpen] = useState(false); // Estado para abrir/fechar o modal de alerta
     const [cep, setCep] = useState(''); // Estado para armazenar o CEP
     const [total, setTotal] = useState(0); // Estado para armazenar o total do carrinho
     const [shipping, setShipping] = useState(0); // Estado para armazenar o valor do frete
     const [paymentCart, setPaymentCart] = useState<PaymentCard | null>(null); // Estado para armazenar os dados do cartão
     const [address, setAddress] = useState<Address>({
         name: '',
+        cpf: '',
+        phone: '',
         address: '',
         number: '',
         complement: '',
@@ -51,12 +59,12 @@ export default function CartPage() {
     }
 
     const validateCep = () => {
-        if (cep.length !== 8) {
+        if (cep.length !== 9) {
             showToast('Informe um CEP válido para calcular o frete', 'error');
             setActiveTab('shipping');
             return false;
         }
-        if(shipping === 0) {
+        if (shipping === 0) {
             showToast('Selecione uma opção de frete', 'error');
             setActiveTab('shipping');
             return false;
@@ -73,6 +81,19 @@ export default function CartPage() {
         }
         return true
     }
+
+    const redirectToHome = () => {
+        router.push('/');
+    }
+    const redirectToLogin = () => {
+        router.push('/login');
+    }
+    
+    useEffect(() => {
+        if (!user) {
+            setIsModalAlertOpen(true);
+        }
+    }, [user]);
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-100">
@@ -121,14 +142,14 @@ export default function CartPage() {
                                         <span>{cartItems[key].item.name}</span>
                                         <div>
                                             <span className='text-xs font-semibold'>{cartItems[key].quantity}x{" "}</span>
-                                            <span>R$ {formatNumber(cartItems[key].item.price)}</span>
+                                            <span>R$ {maskToCurrency(cartItems[key].item.price)}</span>
                                         </div>
                                     </div>
                                 ))}
                                 {/* Total do carrinho */}
                                 <div className="mt-4 flex justify-between items-center font-bold text-xl">
                                     <span>Total:</span>
-                                    <span>R$ {formatNumber(total + shipping)}</span>
+                                    <span>R$ {maskToCurrency(total + shipping)}</span>
                                 </div>
                             </div>
                         ) : (activeTab === 'shipping' ? (
@@ -138,9 +159,9 @@ export default function CartPage() {
                                 <p>Informe seu CEP para calcular o frete:</p>
                                 <input type="text" placeholder="Digite seu CEP"
                                     value={cep}
-                                    onChange={(e) => setCep(e.target.value)}
+                                    onChange={(e) => setCep(maskToCep(e.target.value))}
                                     className="mt-2 p-2 border rounded w-full" />
-                                {cep.length == 8 && (
+                                {cep.length == 9 && (
                                     <div className="mt-4">
                                         {/* Estilização personalizada para radio buttons */}
                                         <div className="flex items-center justify-between border-b pb-2">
@@ -184,7 +205,7 @@ export default function CartPage() {
                                 {/* Total do carrinho */}
                                 <div className="mt-4 flex justify-between items-center font-bold text-xl">
                                     <span>Total:</span>
-                                    <span>R$ {formatNumber(total + shipping)}</span>
+                                    <span>R$ {maskToCurrency(total + shipping)}</span>
                                 </div>
                             </div>
                         ) : (
@@ -197,6 +218,16 @@ export default function CartPage() {
                                         onChange={(e) => setAddress({ ...address, name: e.target.value })} />
                                 </div>
                                 <div className="mt-4">
+                                    <label className="block mb-2">CPF</label>
+                                    <input type="text" className="w-full p-2 border rounded" value={address.cpf}
+                                        onChange={(e) => setAddress({ ...address, cpf: maskToCpf(e.target.value) })} />
+                                </div>
+                                <div className="mt-4">
+                                    <label className="block mb-2">Telefone</label>
+                                    <input type="text" className="w-full p-2 border rounded" value={address.phone}
+                                        onChange={(e) => setAddress({ ...address, phone: maskToPhone(e.target.value) })} />
+                                </div>
+                                <div className="mt-4">
                                     <label className="block mb-2">Endereço</label>
                                     <input type="text" className="w-full p-2 border rounded" value={address.address}
                                         onChange={(e) => setAddress({ ...address, address: e.target.value })} />
@@ -204,7 +235,10 @@ export default function CartPage() {
                                 <div className="mt-4">
                                     <label className="block mb-2">Número</label>
                                     <input type="text" className="w-full p-2 border rounded" value={address.number}
-                                        onChange={(e) => setAddress({ ...address, number: e.target.value })} />
+                                        onChange={(e) => setAddress({
+                                            ...address,
+                                            number: e.target.value.replace(/\D/g, '')
+                                        })} />
                                 </div>
                                 <div className="mt-4">
                                     <label className="block mb-2">Complemento</label>
@@ -214,7 +248,7 @@ export default function CartPage() {
                                 <div className="mt-4">
                                     <label className="block mb-2">CEP</label>
                                     <input type="text" className="w-full p-2 border rounded" value={address.cep}
-                                        onChange={(e) => setAddress({ ...address, cep: e.target.value })} />
+                                        onChange={(e) => setAddress({ ...address, cep: maskToCep(e.target.value) })} />
                                 </div>
                                 <div className="mt-4">
                                     <label className="block mb-2">Cidade</label>
@@ -223,8 +257,36 @@ export default function CartPage() {
                                 </div>
                                 <div className="mt-4">
                                     <label className="block mb-2">Estado</label>
-                                    <input type="text" className="w-full p-2 border rounded" value={address.state}
-                                        onChange={(e) => setAddress({ ...address, state: e.target.value })} />
+                                    <select className='w-full p-2 border rounded' value={address.state}
+                                        onChange={(e) => setAddress({ ...address, state: e.target.value })}>
+                                        <option value="AC">Acre</option>
+                                        <option value="AL">Alagoas</option>
+                                        <option value="AP">Amapá</option>
+                                        <option value="AM">Amazonas</option>
+                                        <option value="BA">Bahia</option>
+                                        <option value="CE">Ceará</option>
+                                        <option value="DF">Distrito Federal</option>
+                                        <option value="ES">Espírito Santo</option>
+                                        <option value="GO">Goiás</option>
+                                        <option value="MA">Maranhão</option>
+                                        <option value="MT">Mato Grosso</option>
+                                        <option value="MS">Mato Grosso do Sul</option>
+                                        <option value="MG">Minas Gerais</option>
+                                        <option value="PA">Pará</option>
+                                        <option value="PB">Paraíba</option>
+                                        <option value="PR">Paraná</option>
+                                        <option value="PE">Pernambuco</option>
+                                        <option value="PI">Piauí</option>
+                                        <option value="RJ">Rio de Janeiro</option>
+                                        <option value="RN">Rio Grande do Norte</option>
+                                        <option value="RS">Rio Grande do Sul</option>
+                                        <option value="RO">Rondônia</option>
+                                        <option value="RR">Roraima</option>
+                                        <option value="SC">Santa Catarina</option>
+                                        <option value="SP">São Paulo</option>
+                                        <option value="SE">Sergipe</option>
+                                        <option value="TO">Tocantins</option>
+                                    </select>
                                 </div>
                             </div>
                         ))}
@@ -253,7 +315,20 @@ export default function CartPage() {
                 setIsModalOpen(false)
             }} />}
             {/* Modal de confirmação de compra */}
-            {isModalShipConfirmOpen && <ShipConfirmModal onClose={() => setIsModalShipConfirmOpen(false)} />}
+            {isModalShipConfirmOpen && <ShipConfirmModal onClose={() => {
+                setIsModalShipConfirmOpen(false)
+                clearCart()
+                redirectToHome()
+            }} />}
+            {/* Modal de alerta */}
+            {isModalAlertOpen && <AlertModal onClose={() => {
+                setIsModalAlertOpen(false)
+                redirectToLogin()
+            }} 
+            dismiss={() => {
+                setIsModalAlertOpen(false)
+                redirectToHome()
+            }}/>}
         </div>
     );
 }

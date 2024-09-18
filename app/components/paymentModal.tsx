@@ -1,6 +1,8 @@
 'use client'
 import { FormEvent, useState } from 'react';
 import { PaymentCard } from '../types/payment';
+import { showToast } from '../helpers/toast';
+import { maskToCardCVV, maskToCardNumber } from '../helpers/mask';
 
 export default function PaymentModal({ onClose }: { onClose: (card: PaymentCard | null) => void }) {
     const [cardNumber, setCardNumber] = useState('');
@@ -10,6 +12,10 @@ export default function PaymentModal({ onClose }: { onClose: (card: PaymentCard 
 
     const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (!cardNumber || !expiryDate || !cvv || !cardName) {
+            showToast('Preencha todos os campos', 'error');
+            return;
+        }
         onClose({
             cardNumber,
             cardName,
@@ -36,7 +42,7 @@ export default function PaymentModal({ onClose }: { onClose: (card: PaymentCard 
                         <input
                             type="text"
                             value={cardNumber}
-                            onChange={(e) => setCardNumber(e.target.value)}
+                            onChange={(e) => setCardNumber(maskToCardNumber(e.target.value))}
                             className="w-full p-2 border rounded"
                             required
                         />
@@ -69,7 +75,7 @@ export default function PaymentModal({ onClose }: { onClose: (card: PaymentCard 
                         <input
                             type="text"
                             value={cvv}
-                            onChange={(e) => setCvv(e.target.value)}
+                            onChange={(e) => setCvv(maskToCardCVV(e.target.value))}
                             className="w-full p-2 border rounded"
                             required
                         />

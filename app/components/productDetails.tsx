@@ -4,7 +4,7 @@ import { Product } from '../types/product';
 import Image from 'next/image';
 import { useCart } from '../contexts/cartContext';
 import { showToast } from '../helpers/toast';
-import { formatNumber } from '../helpers/formatNumer';
+import { maskToCurrency } from '../helpers/mask';
 
 const ProductDetails = ({ product }: { product: Product }) => {
     const { addCartItem } = useCart();
@@ -69,7 +69,7 @@ const ProductDetails = ({ product }: { product: Product }) => {
 
                 {/* Preço e botão de adicionar ao carrinho */}
                 <div className="mt-4">
-                    <p className="text-2xl text-[--primary] mb-4">R$ {formatNumber(product.price)}</p>
+                    <p className="text-2xl text-[--primary] mb-4">R$ {maskToCurrency(product.price)}</p>
                     <button
                         className="w-full px-4 py-2 border-2 border-[--background] hover:border-[--primary] bg-[--primary] text-white rounded-md hover:bg-[--background] hover:text-[--primary] transition-all duration-300 ease-in-out"
                         onClick={() => handleAddToCart()}

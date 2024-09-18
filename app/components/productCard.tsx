@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Product } from "../types/product";
 import { useRouter } from "next/navigation";
-import { formatNumber } from "../helpers/formatNumer";
+import { maskToCurrency } from "../helpers/mask";
 
 
 export default function ProductCard(product: Product) {
@@ -17,7 +17,7 @@ export default function ProductCard(product: Product) {
             <div className="flex flex-col justify-end">
                 <h1 className="text-2xl font-bold text-[--primary]">{product.name}</h1>
                 <p>{product.description}</p>
-                <p>R$ {formatNumber(product.price)}</p>
+                <p>R$ {maskToCurrency(product.price)}</p>
             </div>
         </div>
     )

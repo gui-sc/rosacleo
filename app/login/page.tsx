@@ -4,20 +4,17 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "../contexts/authContext";
 import { showToast } from "../helpers/toast";
+import { useCart } from "../contexts/cartContext";
 
 export default function Login() {
     const router = useRouter();
-    const { user, setUser } = useAuth();
+    const { cartItems } = useCart();
+    const { setUser } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
     const [emailFocused, setEmailFocused] = useState(false);
     const [passwordFocused, setPasswordFocused] = useState(false);
-    if (user) {
-        router.replace('/');
-        return;
-    }
-
+    
     const handleLogin = () => {
         if (!email || !password) {
             showToast('Preencha todos os campos', 'error');
@@ -27,16 +24,24 @@ export default function Login() {
             email,
             name: email.split('@')[0],
         })
-        router.replace('/');
-    }
 
+        if (Object.keys(cartItems).length > 0) {
+            router.push('/carrinho');
+            return;
+        }
+
+        router.push('/');
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100 p-5">
             <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
                 {/* Logo do site */}
-                <div className="flex justify-center mb-8">
-                    <Image src="/logo.png" width={100} height={100} alt="Site Logo" />
+                <div className="flex justify-center mb-8 cursor-pointer " onClick={()=>{
+                    router.push('/');
+                }}>
+                    <Image className="object-contain cursor-pointer " 
+                    src="/logo.png" width={200} height={200} alt="Site Logo" />
                 </div>
 
                 {/* Inputs de login */}
