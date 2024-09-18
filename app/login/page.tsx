@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "../contexts/authContext";
+import { showToast } from "../helpers/toast";
 
 export default function Login() {
     const router = useRouter();
@@ -19,7 +20,8 @@ export default function Login() {
 
     const handleLogin = () => {
         if (!email || !password) {
-            //todo add toast
+            showToast('Preencha todos os campos', 'error');
+            return;
         }
         setUser({
             email,

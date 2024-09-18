@@ -97,19 +97,19 @@ export default function CartPage() {
                                 onClick={() => setActiveTab('details')}
                                 className={`px-4 py-2 ${activeTab === 'details' ? 'border-b-2 border-[--primary] text-[--primary]' : ''}`}
                             >
-                                Itens do Carrinho
+                                Itens
                             </button>
                             <button
                                 onClick={() => setActiveTab('shipping')}
                                 className={`px-4 py-2 ${activeTab === 'shipping' ? 'border-b-2 border-[--primary] text-[--primary]' : ''}`}
                             >
-                                Informações de Frete
+                                Frete
                             </button>
                             <button
                                 onClick={() => setActiveTab('address')}
                                 className={`px-4 py-2 ${activeTab === 'address' ? 'border-b-2 border-[--primary] text-[--primary]' : ''}`}
                             >
-                                Informações de Endereço
+                                Endereço
                             </button>
                         </div>
 
@@ -121,7 +121,7 @@ export default function CartPage() {
                                         <span>{cartItems[key].item.name}</span>
                                         <div>
                                             <span className='text-xs font-semibold'>{cartItems[key].quantity}x{" "}</span>
-                                            <span>R$ {cartItems[key].item.price}</span>
+                                            <span>R$ {formatNumber(cartItems[key].item.price)}</span>
                                         </div>
                                     </div>
                                 ))}

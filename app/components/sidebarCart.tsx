@@ -3,23 +3,24 @@ import LocalMallIcon from '@mui/icons-material/LocalMall'; // Ícone do carrinho
 import HiX from '@mui/icons-material/Close'; // Ícone para fechar a sidebar
 import { useCart } from '../contexts/cartContext';
 import { useRouter } from 'next/navigation';
+import { formatNumber } from '../helpers/formatNumer';
 
 const ShoppingCartSidebar = () => {
     const router = useRouter();
-    const { cartItems } = useCart();
+    const { cartItems, addCartItem, removeCartItem } = useCart();
     const [isCartOpen, setIsCartOpen] = useState(false);
-
 
     // Função para calcular o total do carrinho
     const cartTotal = Object.values(cartItems).reduce((acc, item) => {
         return acc + item.item.price * item.quantity;
     }, 0);
+
     const totalItems = Object.values(cartItems).reduce((acc, item) => {
         return acc + item.quantity;
     }, 0);
 
     const handleCheckout = () => {
-        router.push('/cart');
+        router.push('/carrinho');
     }
 
     return (
@@ -65,31 +66,57 @@ const ShoppingCartSidebar = () => {
                         {Object.keys(cartItems).map((key) => (
                             <div key={key} className="flex justify-between items-center border-b pb-2 text-sm md:text-base">
                                 <span>{cartItems[key].item.name}</span>
-                                <div>
-                                    <span className="text-xs font-semibold">{cartItems[key].quantity}x{" "}</span>
-                                    <span>R$ {cartItems[key].item.price}</span>
+                                <div className="flex items-center gap-2 justify-between">
+
+                                    <button
+                                        className="px-2 py-1 bg-[--primary] text-[--background] rounded-full"
+                                        onClick={() => removeCartItem(cartItems[key].item)}
+                                    >
+                                        -
+                                    </button>
+
+                                    <span className="text-xs font-semibold">{cartItems[key].quantity}{" "}</span>
+
+                                    {/* Botão de aumentar quantidade */}
+                                    <button
+                                        className="px-2 py-1 bg-[--primary] text-[--background] rounded-full"
+                                        onClick={() => addCartItem(cartItems[key].item)}
+                                    >
+                                        +
+                                    </button>
+
+                                </div>
+                                {/* Botão de diminuir quantidade */}
+                                <div className='flex flex-row justify-between gap-3'>
+                                    <span>R$</span>
+                                    <span>{formatNumber(cartItems[key].item.price)}</span>
                                 </div>
                             </div>
                         ))}
                     </div>
 
                     {/* Total do carrinho */}
-                    <div className="mt-4 flex justify-between items-center font-bold text-sm md:text-base">
-                        <span>Total:</span>
-                        <span>R$ {cartTotal}</span>
-                    </div>
-
-                    {/* Botão para finalizar a compra */}
-                    <button
-                        className="w-full px-3 py-1 mt-4 bg-[--primary] text-white text-sm md:text-base rounded-md hover:bg-white hover:text-[--primary] border-2 hover:border-[--primary] border-white transition-all duration-300 ease-in-out"
-                        onClick={handleCheckout}
-                    >
-                        Finalizar Compra
-                    </button>
+                    {cartTotal === 0 ? (
+                        <div className="text-center mt-4 text-sm md:text-base">
+                            Seu carrinho está vazio
+                        </div>
+                    ) : (
+                        <>
+                            <div className="mt-4 flex justify-between items-center font-bold text-sm md:text-base">
+                                <span>Total:</span>
+                                <span>R$ {formatNumber(cartTotal)}</span>
+                            </div>
+                            <button
+                                className="w-full px-3 py-1 mt-4 bg-[--primary] text-white text-sm md:text-base rounded-md hover:bg-white hover:text-[--primary] border-2 hover:border-[--primary] border-white transition-all duration-300 ease-in-out"
+                                onClick={handleCheckout}
+                            >
+                                Finalizar Compra
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
-
     );
 };
 

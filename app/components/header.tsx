@@ -66,7 +66,7 @@ const Header = () => {
                 {user ? (
                     <UserMenu user={user} onLogout={logout} />
                 ) : (
-                    <button className="px-3 py-1 bg-[--primary] text-white rounded-md hover:bg-[--background] hover:text-[--primary] hover:border-[--primary] transition-all duration-300 ease-in-out"
+                    <button className="px-3 py-1 bg-[--primary] text-white rounded-md hover:bg-[--background] hover:text-[--primary] border-2 border-[--background] hover:border-[--primary] transition-all duration-300 ease-in-out"
                         onClick={() => { handleLogin() }}>
                         Login
                     </button>
