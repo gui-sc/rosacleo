@@ -55,7 +55,7 @@ const Header = () => {
                         </button>
                     </div>
                 ) : (
-                    <button className="md:hidden px-3 py-1 bg-[--primary] text-white rounded-md hover:bg-[--background] hover:text-[--primary] hover:border-[--primary] transition-all duration-300 ease-in-out"
+                    <button className="md:hidden px-3 py-1 bg-[--primary] text-white rounded-md border-2 hover:bg-[--background] hover:text-[--primary] hover:border-[--primary] transition-all duration-300 ease-in-out"
                         onClick={() => { handleLogin() }}>
                         Login
                     </button>

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Product } from '../types/product';
 import Image from 'next/image';
 import { useCart } from '../contexts/cartContext';
+import { showToast } from '../helpers/toast';
 
 const ProductDetails = ({ product }: { product: Product }) => {
     const {addCartItem} = useCart();
@@ -11,6 +12,7 @@ const ProductDetails = ({ product }: { product: Product }) => {
 
     const handleAddToCart = () => {
         addCartItem(product);
+        showToast('Produto adicionado ao carrinho', 'success');
     }
 
     return (

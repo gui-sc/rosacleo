@@ -1,14 +1,21 @@
 'use client'
 import { FormEvent, useState } from 'react';
+import { PaymentCard } from '../types/payment';
 
-export default function PaymentModal({ onClose }: { onClose: () => void }) {
+export default function PaymentModal({ onClose }: { onClose: (card: PaymentCard | null) => void }) {
     const [cardNumber, setCardNumber] = useState('');
     const [expiryDate, setExpiryDate] = useState('');
     const [cvv, setCvv] = useState('');
+    const [cardName, setCardName] = useState('');
 
     const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        onClose();
+        onClose({
+            cardNumber,
+            cardName,
+            cardExpiration: expiryDate,
+            cardCVV: cvv
+        });
     };
 
     const maskToDate = (value: string) => {
@@ -30,6 +37,16 @@ export default function PaymentModal({ onClose }: { onClose: () => void }) {
                             type="text"
                             value={cardNumber}
                             onChange={(e) => setCardNumber(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block mb-2">Nome no Cartão</label>
+                        <input
+                            type="text"
+                            value={cardName}
+                            onChange={(e) => setCardName(e.target.value)}
                             className="w-full p-2 border rounded"
                             required
                         />
@@ -65,7 +82,7 @@ export default function PaymentModal({ onClose }: { onClose: () => void }) {
                     </button>
                 </form>
                 <button
-                    onClick={onClose}
+                    onClick={() => onClose(null)}
                     className="mt-4 w-full px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
                 >
                     Cancelar

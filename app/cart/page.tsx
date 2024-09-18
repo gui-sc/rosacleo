@@ -4,13 +4,30 @@ import Link from 'next/link'; // Para navegação
 import Header from '../components/header';
 import { useCart } from '../contexts/cartContext';
 import PaymentModal from '../components/paymentModal';
+import { formatNumber } from '../helpers/formatNumer';
+import { Address } from '../types/address';
+import { PaymentCard } from '../types/payment';
+import ShipConfirmModal from '../components/shipConfirmModal';
+import { showToast } from '../helpers/toast';
 
 export default function CartPage() {
     const { cartItems } = useCart();
     const [activeTab, setActiveTab] = useState('details'); // Estado para alternar entre as abas
     const [isModalOpen, setIsModalOpen] = useState(false); // Estado para abrir/fechar o modal
+    const [isModalShipConfirmOpen, setIsModalShipConfirmOpen] = useState(false); // Estado para abrir/fechar o modal de confirmação de frete
     const [cep, setCep] = useState(''); // Estado para armazenar o CEP
     const [total, setTotal] = useState(0); // Estado para armazenar o total do carrinho
+    const [shipping, setShipping] = useState(0); // Estado para armazenar o valor do frete
+    const [paymentCart, setPaymentCart] = useState<PaymentCard | null>(null); // Estado para armazenar os dados do cartão
+    const [address, setAddress] = useState<Address>({
+        name: '',
+        address: '',
+        number: '',
+        complement: '',
+        cep: '',
+        city: '',
+        state: '',
+    }); // Estado para armazenar os dados do endereço
     // Função para calcular o total do carrinho
     const cartTotal = Number(Object.values(cartItems).reduce((acc, item) => {
         return acc + item.item.price * item.quantity;
@@ -27,6 +44,35 @@ export default function CartPage() {
         if (cep.length === 8) setTotal(Number((total + 20).toFixed(2)));
     }, [cep]);
 
+    const handleCheckout = (openModal: (condition: boolean) => void) => {
+        if (!validateCep()) return;
+        if (!validateAddress()) return;
+        openModal(true)
+    }
+
+    const validateCep = () => {
+        if (cep.length !== 8) {
+            showToast('Informe um CEP válido para calcular o frete', 'error');
+            setActiveTab('shipping');
+            return false;
+        }
+        if(shipping === 0) {
+            showToast('Selecione uma opção de frete', 'error');
+            setActiveTab('shipping');
+            return false;
+        }
+        return true;
+    }
+
+    const validateAddress = () => {
+        const { name, address: street, number, cep, city, state } = address;
+        if (!name || !street || !number || !cep || !city || !state) {
+            showToast('Preencha todos os campos do endereço', 'error');
+            setActiveTab('address');
+            return false;
+        }
+        return true
+    }
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-100">
@@ -82,7 +128,7 @@ export default function CartPage() {
                                 {/* Total do carrinho */}
                                 <div className="mt-4 flex justify-between items-center font-bold text-xl">
                                     <span>Total:</span>
-                                    <span>R$ {total}</span>
+                                    <span>R$ {formatNumber(total + shipping)}</span>
                                 </div>
                             </div>
                         ) : (activeTab === 'shipping' ? (
@@ -92,44 +138,53 @@ export default function CartPage() {
                                 <p>Informe seu CEP para calcular o frete:</p>
                                 <input type="text" placeholder="Digite seu CEP"
                                     value={cep}
-                                    onChange={(e) => setCep((prev) => {
-                                        if (prev.length === 8 && e.target.value.length < 8) {
-                                            setTotal(total - 20);
-                                        }
-                                        return e.target.value;
-                                    })}
+                                    onChange={(e) => setCep(e.target.value)}
                                     className="mt-2 p-2 border rounded w-full" />
                                 {cep.length == 8 && (
                                     <div className="mt-4">
-                                        {/* Opções de frete */}
+                                        {/* Estilização personalizada para radio buttons */}
                                         <div className="flex items-center justify-between border-b pb-2">
-                                            <span>Entrega Expressa</span>
-                                            <span>R$ 20,00</span>
-                                            <span className="text-xs">Entrega em até 2 dias úteis</span>
-                                            <button
-                                                onClick={() => setTotal(total + 20)}
-                                                className="px-4 py-2 bg-[--primary] text-white rounded-md hover:bg-[--background] hover:text-[--primary] border-2 border-[--background] hover:border-[--primary] transition-all duration-300 ease-in-out"
-                                            >
-                                                Selecionar
-                                            </button>
+                                            {/* Custom radio button */}
+                                            <input
+                                                type="radio"
+                                                id="expressa"
+                                                name="tipoEntrega"
+                                                value="expressa"
+                                                className="hidden peer"
+                                                onChange={() => setShipping(20)}
+                                            />
+                                            <span className="w-4 h-4 inline-block border-2 border-[--primary] rounded-full mr-2 peer-checked:bg-[--primary] peer-checked:border-[--primary]"></span>
+                                            <label htmlFor="expressa" className="flex-1 flex justify-between cursor-pointer">
+                                                <span className="text-sm md:text-base">Entrega Expressa</span>
+                                                <span className="text-sm md:text-base">R$ 20,00</span>
+                                                <span className="text-xs">Até 2 dias úteis</span>
+                                            </label>
                                         </div>
+
                                         <div className="flex items-center justify-between border-b pb-2">
-                                            <span>Entrega Normal</span>
-                                            <span>R$ 10,00</span>
-                                            <span className="text-xs">Entrega em até 5 dias úteis</span>
-                                            <button
-                                                onClick={() => setTotal(total + 10)}
-                                                className="px-4 py-2 bg-[--primary] text-white rounded-md hover:bg-[--background] hover:text-[--primary] border-2 border-[--background] hover:border-[--primary] transition-all duration-300 ease-in-out"
-                                            >
-                                                Selecionar
-                                            </button>
+                                            {/* Custom radio button */}
+                                            <input
+                                                type="radio"
+                                                id="normal"
+                                                name="tipoEntrega"
+                                                value="normal"
+                                                onChange={() => setShipping(10)}
+                                                className="hidden peer"
+                                            />
+                                            <span className="w-4 h-4 inline-block border-2 border-[--primary] rounded-full mr-2 peer-checked:bg-[--primary] peer-checked:border-[--primary]"></span>
+                                            <label htmlFor="normal" className="flex-1 flex justify-between cursor-pointer">
+                                                <span className="text-sm md:text-base">Entrega Normal</span>
+                                                <span className="text-sm md:text-base">R$ 10,00</span>
+                                                <span className="text-xs">Até 5 dias úteis</span>
+                                            </label>
                                         </div>
                                     </div>
+
                                 )}
                                 {/* Total do carrinho */}
                                 <div className="mt-4 flex justify-between items-center font-bold text-xl">
                                     <span>Total:</span>
-                                    <span>R$ {total}</span>
+                                    <span>R$ {formatNumber(total + shipping)}</span>
                                 </div>
                             </div>
                         ) : (
@@ -138,49 +193,67 @@ export default function CartPage() {
                                 <h3 className="text-lg font-bold">Informações de Endereço</h3>
                                 <div className="mt-4">
                                     <label className="block mb-2">Nome</label>
-                                    <input type="text" className="w-full p-2 border rounded" />
+                                    <input type="text" className="w-full p-2 border rounded" value={address.name}
+                                        onChange={(e) => setAddress({ ...address, name: e.target.value })} />
                                 </div>
                                 <div className="mt-4">
                                     <label className="block mb-2">Endereço</label>
-                                    <input type="text" className="w-full p-2 border rounded" />
+                                    <input type="text" className="w-full p-2 border rounded" value={address.address}
+                                        onChange={(e) => setAddress({ ...address, address: e.target.value })} />
                                 </div>
                                 <div className="mt-4">
                                     <label className="block mb-2">Número</label>
-                                    <input type="text" className="w-full p-2 border rounded" />
+                                    <input type="text" className="w-full p-2 border rounded" value={address.number}
+                                        onChange={(e) => setAddress({ ...address, number: e.target.value })} />
                                 </div>
                                 <div className="mt-4">
                                     <label className="block mb-2">Complemento</label>
-                                    <input type="text" className="w-full p-2 border rounded" />
+                                    <input type="text" className="w-full p-2 border rounded" value={address.complement}
+                                        onChange={(e) => setAddress({ ...address, complement: e.target.value })} />
                                 </div>
                                 <div className="mt-4">
                                     <label className="block mb-2">CEP</label>
-                                    <input type="text" className="w-full p-2 border rounded" />
+                                    <input type="text" className="w-full p-2 border rounded" value={address.cep}
+                                        onChange={(e) => setAddress({ ...address, cep: e.target.value })} />
                                 </div>
                                 <div className="mt-4">
                                     <label className="block mb-2">Cidade</label>
-                                    <input type="text" className="w-full p-2 border rounded" />
+                                    <input type="text" className="w-full p-2 border rounded" value={address.city}
+                                        onChange={(e) => setAddress({ ...address, city: e.target.value })} />
                                 </div>
                                 <div className="mt-4">
                                     <label className="block mb-2">Estado</label>
-                                    <input type="text" className="w-full p-2 border rounded" />
+                                    <input type="text" className="w-full p-2 border rounded" value={address.state}
+                                        onChange={(e) => setAddress({ ...address, state: e.target.value })} />
                                 </div>
                             </div>
                         ))}
 
 
                         {/* Botão para finalizar a compra */}
-                        <button
-                            onClick={() => setIsModalOpen(true)}
+                        {!paymentCart ? <button
+                            onClick={() => handleCheckout(setIsModalOpen)}
                             className="mt-5 w-full px-4 py-2 bg-[--primary] text-white rounded-md hover:bg-[--background] hover:text-[--primary] border-2 border-[--background] hover:border-[--primary] transition-all duration-300 ease-in-out"
                         >
-                            Finalizar Compra
-                        </button>
+                            Ir para o Pagamento
+                        </button> :
+                            <button
+                                onClick={() => handleCheckout(setIsModalShipConfirmOpen)}
+                                className="mt-5 w-full px-4 py-2 bg-[--primary] text-white rounded-md hover:bg-[--background] hover:text-[--primary] border-2 border-[--background] hover:border-[--primary] transition-all duration-300 ease-in-out"
+                            >
+                                Finalizar Compra
+                            </button>}
                     </div>
                 )}
             </main>
 
             {/* Modal para cadastro de cartão */}
-            {isModalOpen && <PaymentModal onClose={() => setIsModalOpen(false)} />}
+            {isModalOpen && <PaymentModal onClose={(cart: PaymentCard | null) => {
+                setPaymentCart(cart)
+                setIsModalOpen(false)
+            }} />}
+            {/* Modal de confirmação de compra */}
+            {isModalShipConfirmOpen && <ShipConfirmModal onClose={() => setIsModalShipConfirmOpen(false)} />}
         </div>
     );
 }
