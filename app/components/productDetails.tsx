@@ -9,7 +9,6 @@ import { maskToCurrency } from '../helpers/mask';
 const ProductDetails = ({ product }: { product: Product }) => {
     const { addCartItem } = useCart();
     const [selectedIndex, setSelectedIndex] = useState(0);
-    const [selectedColor, setSelectedColor] = useState(product.colors[0]);
 
     const handleAddToCart = () => {
         addCartItem(product);
@@ -34,37 +33,17 @@ const ProductDetails = ({ product }: { product: Product }) => {
             </div>
 
             {/* Imagem principal */}
-            <div className="lg:w-1/2">
+            <div className="lg:w-1/3">
                 <Image src={product.images[selectedIndex]} alt="Product"
                     width={500} height={500} className="w-full h-auto object-cover rounded-md shadow-lg" />
             </div>
 
             {/* Detalhes do produto (Responsivo para mobile e desktop) */}
-            <div className="flex flex-col gap-4 lg:w-1/4">
+            <div className="flex flex-col gap-4 lg:w-1/2">
                 {/* Título e descrição */}
                 <div>
                     <h2 className="text-3xl font-bold mb-2">{product.name}</h2>
-                    <p className="text-gray-700 mb-4">{product.description}</p>
-                </div>
-
-                {/* Cores disponíveis */}
-                <div>
-                    <p className="text-lg font-semibold mb-2">Cores disponíveis:</p>
-                    <div className="flex gap-2">
-                        {product.colors.map((color, index) => (
-                            <div
-                                key={index}
-                                style={{
-                                    backgroundColor: color,
-                                }}
-                                className={`w-8 h-8 rounded-full cursor-pointer 
-                                     border-2 
-                                    ${selectedColor === color ? 'border-red-700' : 'border-transparent'}
-                                `}
-                                onClick={() => setSelectedColor(color)}
-                            ></div>
-                        ))}
-                    </div>
+                    <p className="text-gray-700 mb-4 text-justify">{product.description}</p>
                 </div>
 
                 {/* Preço e botão de adicionar ao carrinho */}

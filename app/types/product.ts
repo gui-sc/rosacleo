@@ -4,5 +4,5 @@ export type Product = {
     price: number;
     images: string[];
     description: string;
-    colors: string[];
+    shortDescription: string;
 }

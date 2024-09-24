@@ -1,40 +1,13 @@
 'use client'
 import ProductDetails from '../../components/productDetails';
 import Header from '../../components/header';
-import { Product } from '../../types/product';
 import { useRouter } from 'next/navigation';
-
-// Produtos simulados para demonstração
-const products: Product[] = [
-    {
-        id: 1,
-        name: 'Tenis',
-        description: 'Tênis esportivo confortável e leve para a prática de atividades físicas.',
-        price: 199.99,
-        images: [
-            '/product1.png',
-            '/product2.png',
-            '/product2.png',
-        ],
-        colors: ['#000000', '#FFFFFF', '#FF5733']
-    },
-    {
-        id: 2,
-        name: 'Camiseta',
-        description: 'Camiseta feita de material leve, ideal para o dia a dia.',
-        price: 49.99,
-        images: [
-            '/product2.png',
-            '/product2.png',
-        ],
-        colors: ['#FF5733', '#33FF57', '#3357FF']
-    }
-];
+import { products } from '../../helpers/products';
 
 const ProductPage = ({ params }: { params: { product: string } }
 ) => {
     // Busca o produto com base no parâmetro da URL
-    const product = products.find(product => product.name === params.product);
+    const product = products.find(product => product.id === Number(params.product));
     // Caso o produto não seja encontrado
     const router = useRouter();
     const handleRedirect = () => {
