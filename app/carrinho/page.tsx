@@ -24,6 +24,8 @@ export default function CartPage() {
     const [cep, setCep] = useState(''); // Estado para armazenar o CEP
     const [total, setTotal] = useState(0); // Estado para armazenar o total do carrinho
     const [shipping, setShipping] = useState(0); // Estado para armazenar o valor do frete
+    const [discount, setDiscount] = useState(0); // Estado para armazenar o valor do desconto
+    const [discountCode, setDiscountCode] = useState(''); // Estado para armazenar o código do desconto
     const [paymentCart, setPaymentCart] = useState<PaymentCard | null>(null); // Estado para armazenar os dados do cartão
     const [address, setAddress] = useState<Address>({
         name: '',
@@ -47,10 +49,6 @@ export default function CartPage() {
     useEffect(() => {
         setTotal(cartTotal);
     }, [cartItems]);
-
-    useEffect(() => {
-        if (cep.length === 8) setTotal(Number((total + 20).toFixed(2)));
-    }, [cep]);
 
     const handleCheckout = (openModal: (condition: boolean) => void) => {
         if (!validateCep()) return;
@@ -82,13 +80,31 @@ export default function CartPage() {
         return true
     }
 
+    const validateDiscountCode = () => {
+        if (discountCode.toLowerCase() === "rosacleocosmeticos") {
+            if(discount > 0) {
+                showToast('Cupom já aplicado', 'error');
+                return;
+            }
+            setDiscount(20);
+            showToast('Cupom aplicado com sucesso', 'success');
+            return;
+        }
+        showToast('Cupom inválido', 'error');
+    }
+
+    const calculateTotal = () => {
+        const sum = total + shipping;
+        return sum - (sum * discount / 100);
+    }
+
     const redirectToHome = () => {
         router.push('/');
     }
     const redirectToLogin = () => {
         router.push('/login');
     }
-    
+
     useEffect(() => {
         if (!user) {
             setIsModalAlertOpen(true);
@@ -136,7 +152,7 @@ export default function CartPage() {
 
                         {/* Conteúdo da aba */}
                         {activeTab === 'details' ? (
-                            <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-2">
                                 {Object.keys(cartItems).map((key) => (
                                     <div key={key} className="flex justify-between items-center border-b pb-2">
                                         <span>{cartItems[key].item.name}</span>
@@ -150,6 +166,28 @@ export default function CartPage() {
                                 <div className="mt-4 flex justify-between items-center font-bold text-xl">
                                     <span>Total:</span>
                                     <span>R$ {maskToCurrency(total + shipping)}</span>
+                                </div>
+                                {discount > 0 && (<>
+                                    <div className="flex justify-between items-center font-bold text-xl">
+                                        <span className="text-sm text-green-500">Desconto de {discount}%</span>
+                                        <span className='text-sm text-green-500'>- R$ {maskToCurrency(total * discount / 100)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center font-bold text-xl">
+                                        <span>Total com Desconto:</span>
+                                        <span>R$ {maskToCurrency(calculateTotal())}</span>
+                                    </div>
+                                </>
+                                )}
+                                {/* Input para cupom de desconto */}
+                                <div className="mt-4 flex flex-row gap-3">
+                                    <input type="text" className="w-full p-2 border rounded"
+                                        placeholder='CUPOM DE DESCONTO'
+                                        value={discountCode}
+                                        onChange={(e) => setDiscountCode(e.target.value.toUpperCase())} />
+                                    <button className="px-4 py-2 bg-[--primary] text-white rounded-md hover:bg-[--background] hover:text-[--primary] border-2 border-[--background] hover:border-[--primary] transition-all duration-300 ease-in-out"
+                                        onClick={validateDiscountCode}>
+                                        Aplicar
+                                    </button>
                                 </div>
                             </div>
                         ) : (activeTab === 'shipping' ? (
@@ -171,7 +209,8 @@ export default function CartPage() {
                                                 id="expressa"
                                                 name="tipoEntrega"
                                                 value="expressa"
-                                                className="hidden peer"
+                                                checked={shipping === 20}
+                                                className={`hidden peer`}
                                                 onChange={() => setShipping(20)}
                                             />
                                             <span className="w-4 h-4 inline-block border-2 border-[--primary] rounded-full mr-2 peer-checked:bg-[--primary] peer-checked:border-[--primary]"></span>
@@ -188,9 +227,10 @@ export default function CartPage() {
                                                 type="radio"
                                                 id="normal"
                                                 name="tipoEntrega"
+                                                checked={shipping === 10}
                                                 value="normal"
                                                 onChange={() => setShipping(10)}
-                                                className="hidden peer"
+                                                className={`hidden peer`}
                                             />
                                             <span className="w-4 h-4 inline-block border-2 border-[--primary] rounded-full mr-2 peer-checked:bg-[--primary] peer-checked:border-[--primary]"></span>
                                             <label htmlFor="normal" className="flex-1 flex justify-between cursor-pointer">
@@ -205,7 +245,7 @@ export default function CartPage() {
                                 {/* Total do carrinho */}
                                 <div className="mt-4 flex justify-between items-center font-bold text-xl">
                                     <span>Total:</span>
-                                    <span>R$ {maskToCurrency(total + shipping)}</span>
+                                    <span>R$ {maskToCurrency(calculateTotal())}</span>
                                 </div>
                             </div>
                         ) : (
@@ -324,11 +364,11 @@ export default function CartPage() {
             {isModalAlertOpen && <AlertModal onClose={() => {
                 setIsModalAlertOpen(false)
                 redirectToLogin()
-            }} 
-            dismiss={() => {
-                setIsModalAlertOpen(false)
-                redirectToHome()
-            }}/>}
+            }}
+                dismiss={() => {
+                    setIsModalAlertOpen(false)
+                    redirectToHome()
+                }} />}
         </div>
     );
 }
