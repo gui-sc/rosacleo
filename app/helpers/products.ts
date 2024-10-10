@@ -8,7 +8,7 @@ export const products: Product[] = [
 Enriquecido com extrato de chá verde, rico em antioxidantes, o creme ajuda a proteger a pele dos danos causados pelos radicais livres, enquanto a camomila proporciona um efeito calmante e suavizante, aliviando a irritação e o desconforto associados à rosácea.
 Sua textura leve e de rápida absorção promove hidratação profunda, formando uma barreira protetora que mantém a pele hidratada e saudável ao longo do dia. Ideal para uso diário, este creme não só ajuda a reduzir a aparência de vermelhidão e irritação, mas também melhora a textura da pele, promovendo um aspecto mais uniforme e radiante.`,
         shortDescription: 'Creme hidratante de melaleuca',        
-price: 41.99,
+price: 43.50,
         images: [
             '/rosacleo3.jpg',
             '/rosacleo2.jpg',
